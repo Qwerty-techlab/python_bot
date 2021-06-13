@@ -1,25 +1,41 @@
 import config
-import logging
 import requests
 import datetime
-import random
+import logging
 from config import TOKEN, open_weather_token
-from aiogram import Bot, types
-from aiogram.dispatcher import Dispatcher
-from aiogram.utils import executor
+from aiogram.utils.markdown import text, bold, italic, code, pre
+from aiogram.types.message import ContentType
 from filters import IsAdminFilters
+from aiogram import Bot, types
+from aiogram.utils import executor
+from aiogram.dispatcher import Dispatcher
+import keyboards as kb
 
 logging.basicConfig(level=logging.INFO)
-bot = Bot(token=config.TOKEN)
-dp = Dispatcher(bot)
-
-
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 dp.filters_factory.bind(IsAdminFilters)
 
+help_message = text(
+    "Доступные команды:\n",
+    "/start - приветствие",
+    "/weather - текущая погода в Томске",
+    "/location - отправить своё местоположение",
+    "/contact - отправить свой контакт",
+    sep="\n"
+)
+
+@dp.message_handler(commands=['start'])
+async def process_start_command(message: types.Message):
+    await message.reply('Привет!\nИспользуй /help, '
+                        'чтобы узнать список доступных команд!')
+
+@dp.message_handler(commands=['help'])
+async def process_help_command(message: types.Message):
+    await message.reply(help_message)
+
 @dp.message_handler(commands=["weather"])
-async def start_command(message: types.Message):
+async def weather_command(message: types.Message):
     code_to_smile = {
       "Clear": "Ясно \U00002600",
       "Clouds": "Облачно \U00002601",
@@ -62,6 +78,14 @@ async def start_command(message: types.Message):
     except:
       print("1")
 
+@dp.message_handler(commands=['location'])
+async def locationsend_command(message: types.Message):
+    await message.reply("Отправить местоположение", reply_markup=kb.location_send)
+
+@dp.message_handler(commands=['contact'])
+async def contactsend_command(message: types.Message):
+    await  message.reply("Отправить контакт",reply_markup=kb.number_send)
+
 @dp.message_handler(content_types=["new_chat_members"])
 async def on_user_joined(message: types.Message):
   print("JOINED")
@@ -75,13 +99,6 @@ async def cmd_ban(message: types.Message):
   await message.bot.delete_message(chat_id=config.GROUP_ID, message_id=message.message_id)
   await message.bot.kick_chat_member(chat_id=config.GROUP_ID, user_id=message.reply_to_message.from_user.id)
   await message.reply_to_message.reply("Бан!!!")
-
-@dp.message_handler()
-async def filter_messages(message: types.Message):
-  if "test" in message.text:
-    await message.reply("Маты - плохо!")
-    await message.delete()
-
 
 if __name__ == '__main__':
     executor.start_polling(dp)
