@@ -2,6 +2,7 @@ import config
 import requests
 import datetime
 import logging
+import random
 from config import TOKEN, open_weather_token
 from aiogram.utils.markdown import text, bold, italic, code, pre
 from aiogram.types.message import ContentType
@@ -10,7 +11,7 @@ from aiogram import Bot, types
 from aiogram.utils import executor
 from aiogram.dispatcher import Dispatcher
 import keyboards as kb
-
+#-----------------------------------------------------------------------------
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
@@ -22,8 +23,21 @@ help_message = text(
     "/weather - текущая погода в Томске",
     "/location - отправить своё местоположение",
     "/contact - отправить свой контакт",
+    "/coin - game",
     sep="\n"
 )
+#------------------------------------------------------------------------------
+
+
+
+
+
+
+@dp.message_handler(commands=['coin'])
+async def coin_game(message: types.Message):
+    await  message.reply("Игра Орел-Решка", reply_markup=kb.coinkb)
+    if 0 == True:
+        message.reply('orel')
 
 @dp.message_handler(commands=['start'])
 async def process_start_command(message: types.Message):
